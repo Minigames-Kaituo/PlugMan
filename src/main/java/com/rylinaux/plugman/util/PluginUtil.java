@@ -30,6 +30,8 @@ import com.google.common.base.Joiner;
 import com.rylinaux.plugman.PlugMan;
 import com.rylinaux.plugman.api.GentleUnload;
 import com.rylinaux.plugman.api.PlugManAPI;
+import com.rylinaux.plugman.event.PluginLoadEvent;
+import com.rylinaux.plugman.event.PluginUnloadEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -330,8 +332,8 @@ public class PluginUtil {
 
             PlugMan.getInstance().getFilePluginMap().put(pluginFile.getName(), target.getName());
         }
-
-        return PlugMan.getInstance().getMessageFormatter().format("load.loaded", target.getName());
+        Bukkit.getPluginManager().callEvent(new PluginLoadEvent(target, pluginFile.getName()));
+        return PlugMan.getInstance().getMessageFormatter().format("load.loaded", pluginFile.getName());
 
     }
 
@@ -542,6 +544,8 @@ public class PluginUtil {
 
             if (names != null && names.containsKey(name))
                 names.remove(name);
+
+
         } else {
             GentleUnload gentleUnload = PlugManAPI.getGentleUnloads().get(plugin);
             if (!gentleUnload.askingForGentleUnload())
@@ -578,6 +582,7 @@ public class PluginUtil {
         // This tries to get around the issue where Windows refuses to unlock jar files that were previously loaded into the JVM.
         System.gc();
 
+        Bukkit.getPluginManager().callEvent(new PluginUnloadEvent(plugin));
         return PlugMan.getInstance().getMessageFormatter().format("unload.unloaded", name);
 
     }
